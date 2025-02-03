@@ -19,8 +19,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 		actions: {
 			// Use getActions to call a function within a fuction
 			login: async (email, password) => {
-
-
 				const myHeaders = new Headers();
 				myHeaders.append("Content-Type", "application/json");
 
@@ -37,12 +35,41 @@ const getState = ({ getStore, getActions, setStore }) => {
 				};
 
 				try {
-					const response = await fetch("https://potential-spork-7pvx7qxxxj9c64x-3001.app.github.dev/api/login", requestOptions);
+					const response = await fetch(process.env.BACKEND_URL + "/api/login", requestOptions);
 					const result = await response.json();
-
 					if (response.status === 200) {
 						localStorage.setItem("token", result.access_token)
-						return true
+						return true;
+					}
+				} catch (error) {
+					console.error(error);
+					return false;
+				};
+			},
+			signUp: async (email, password, username, fullName) => {
+				const myHeaders = new Headers();
+				myHeaders.append("Content-Type", "application/json");
+
+				const raw = JSON.stringify({
+					"email": email,
+					"password": password,
+					"username": username,
+					"fullName": fullName
+				});
+
+				const requestOptions = {
+					method: "POST",
+					headers: myHeaders,
+					body: raw,
+					redirect: "follow"
+				};
+
+				try {
+					const response = await fetch(process.env.BACKEND_URL + "/api/signup", requestOptions);
+					const result = await response.json();
+					if (response.status === 200) {
+						localStorage.setItem("token", result.access_token)
+						return true;
 					}
 				} catch (error) {
 					console.error(error);
@@ -52,7 +79,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 			getProfile: async () => {
 				let token = localStorage.getItem("token")
 				try {
-					const response = await fetch("https://potential-spork-7pvx7qxxxj9c64x-3001.app.github.dev/api/profile", {
+					const response = await fetch(process.env.BACKEND_URL + "/api/profile", {
 						method: "GET",
 						headers: {
 							"Authorization": `Bearer ${token}`

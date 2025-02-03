@@ -33,12 +33,34 @@ def login():
         password = request.json.get("password", None)
         user = db.session.execute(db.select(User).filter_by(email=email)).scalar_one()
 
-        if email == user.email or password == user.password:
+        if password == user.password:
             access_token = create_access_token(identity=email)
-            return jsonify(access_token=access_token), 200
-            
+            return jsonify(access_token=access_token)
+
+        return jsonify({"msg": "Bad email or password"}), 401
+
     except:
-         return jsonify({"msg": "Bad email or password"}), 401
+        return jsonify({"msg": "You should register"}), 401
+    
+# Create a route to authenticate your users and return JWTs. The
+# create_access_token() function is used to actually generate the JWT.
+@api.route("/signup", methods=["POST"])
+def signup():
+    try:
+        email = request.json.get("email", None)
+        password = request.json.get("password", None)
+        username = request.json.get("username", None)
+        full_name = request.json.get("full_name", None)
+        user = db.session.execute(db.select(User).filter_by(email=email)).scalar_one()
+
+        if password == user.password:
+            access_token = create_access_token(identity=email)
+            return jsonify(access_token=access_token)
+
+        return jsonify({"msg": "Bad email or password"}), 401
+
+    except:
+        return jsonify({"msg": "You should register"}), 401
 
 
 # Protect a route with jwt_required, which will kick out requests
