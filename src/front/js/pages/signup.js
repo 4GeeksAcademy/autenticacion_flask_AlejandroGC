@@ -8,7 +8,7 @@ export const SignUp = () => {
 
 	return (
 		<div className="text-center mt-5">
-			<h1>Register to access your data</h1>
+			<h1>Sign up to access your data</h1>
 			<SignUpForm/>
 		</div>
 	);

@@ -6,6 +6,7 @@ from api.models import db, User
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
+from flask_admin import Admin
 
 api = Blueprint('api', __name__)
 
@@ -51,16 +52,17 @@ def signup():
         password = request.json.get("password", None)
         username = request.json.get("username", None)
         full_name = request.json.get("full_name", None)
-        user = db.session.execute(db.select(User).filter_by(email=email)).scalar_one()
+        is_active = request.json.get("is_active", None)
+        user = User(email=email, password=password, username=username, full_name=full_name, is_active=is_active)
+        db.session.add(user)
+        db.session.commit()
+        
+        access_token = create_access_token(identity=email)
+        return jsonify(access_token=access_token)
 
-        if password == user.password:
-            access_token = create_access_token(identity=email)
-            return jsonify(access_token=access_token)
-
-        return jsonify({"msg": "Bad email or password"}), 401
-
-    except:
-        return jsonify({"msg": "You should register"}), 401
+    except Exception as e:
+        print(e)
+        return jsonify({"msg": "Complete data correctly"}), 401
 
 
 # Protect a route with jwt_required, which will kick out requests
@@ -69,6 +71,6 @@ def signup():
 @jwt_required()
 def get_profile():
     # Access the identity of the current user with get_jwt_identity
-    current_user = get_jwt_identity()
-    print(current_user)
-    return jsonify(logged_in_as=current_user), 200
+    email = get_jwt_identity()
+    profile = db.session.execute(db.select(User).filter_by(email=email)).scalar_one().serialize()
+    return jsonify(profile), 200

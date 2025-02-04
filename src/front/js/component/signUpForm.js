@@ -13,10 +13,9 @@ export const SignUpForm = () => {
 
     async function handleSubmit(e) {
         e.preventDefault()
-        let signUp =  actions.signUp(email,password,username,fullName);
-        console.log(signUp)
+        let signUp =  actions.signUp(email, password, username, fullName, true);
         if (signUp) {
-                navigate("/home")
+                navigate("/")
         }
         
     }

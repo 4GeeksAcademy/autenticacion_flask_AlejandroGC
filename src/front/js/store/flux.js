@@ -3,18 +3,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 		store: {
 			message: null,
 			auth: false,
-			demo: [
-				{
-					title: "FIRST",
-					background: "white",
-					initial: "white"
-				},
-				{
-					title: "SECOND",
-					background: "white",
-					initial: "white"
-				}
-			]
+			data: {}
 		},
 		actions: {
 			// Use getActions to call a function within a fuction
@@ -37,16 +26,18 @@ const getState = ({ getStore, getActions, setStore }) => {
 				try {
 					const response = await fetch(process.env.BACKEND_URL + "/api/login", requestOptions);
 					const result = await response.json();
+
 					if (response.status === 200) {
+						setStore({auth: true})
 						localStorage.setItem("token", result.access_token)
 						return true;
 					}
 				} catch (error) {
-					console.error(error);
+					console.log(false);
 					return false;
 				};
 			},
-			signUp: async (email, password, username, fullName) => {
+			signUp: async (email, password, username, fullName, is_active) => {
 				const myHeaders = new Headers();
 				myHeaders.append("Content-Type", "application/json");
 
@@ -54,9 +45,10 @@ const getState = ({ getStore, getActions, setStore }) => {
 					"email": email,
 					"password": password,
 					"username": username,
-					"fullName": fullName
+					"full_name": fullName,
+					"is_active": is_active
 				});
-
+				
 				const requestOptions = {
 					method: "POST",
 					headers: myHeaders,
@@ -65,9 +57,12 @@ const getState = ({ getStore, getActions, setStore }) => {
 				};
 
 				try {
-					const response = await fetch(process.env.BACKEND_URL + "/api/signup", requestOptions);
+					const response = await fetch(process.env.BACKEND_URL + "api/signup", requestOptions);
+					console.log(response);
 					const result = await response.json();
+					
 					if (response.status === 200) {
+						setStore({auth: true})
 						localStorage.setItem("token", result.access_token)
 						return true;
 					}
@@ -85,18 +80,25 @@ const getState = ({ getStore, getActions, setStore }) => {
 							"Authorization": `Bearer ${token}`
 						},
 					});
-					const result = await response.json();
-					console.log(result)
+					if (response.status === 200) {
+						const result = await response.json();
+						setStore({data: result})
+						return true;
+					}
 				} catch (error) {
 					console.error(error);
+					return false
 				};
 			},
 			tokenVerify:()=>{
 				//crear un nuevo endpoint que se llame verificacion de token
 				//la peticion en la funcion tokenVerify del front deberia actualizar un estado auth:
+				//(realizado en las funciones asíncronas) 
 			},
 			logout:()=>{
 				//borrar el token del localStorage
+				setStore({auth: false})
+				localStorage.removeItem("token")
 			},
 			getMessage: async () => {
 				try {
